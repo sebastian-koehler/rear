@@ -18,11 +18,7 @@ fi
 # Part 3: prepend filepathlen before each filepath in file $TMP_DIR/nbu_backuplist (for bprestore)
 #cat $TMP_DIR/nbu_backuplist | awk '{print length, $0}' > $TMP_DIR/nbu_inputfile
 
-# Part 4: Add excluded filesystems to the listfile used in the -f option of the bprecover command
-if grep -q "^/$" $TMP_DIR/restore_fs_list
-then
-   echo "!$TARGET_FS_ROOT" >> $TMP_DIR/restore_fs_list
-fi
+# Part 4: Add excluded filesystems to the listfile used in the -f option of the bprestore command
 if [ ${#EXCLUDE_MOUNTPOINTS[@]} -gt 0 ]
 then
     for FS in "${EXCLUDE_MOUNTPOINTS[@]}"
