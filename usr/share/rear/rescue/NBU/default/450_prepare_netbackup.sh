@@ -26,5 +26,11 @@ if test -r /etc/xinetd.d/vnetd -o -r /etc/xinetd.d/bpcd -o -r /etc/xinetd.d/vopi
 	COPY_AS_IS+=( /etc/xinetd.conf /etc/xinetd.d/bpcd /etc/xinetd.d/vnetd /etc/xinetd.d/vopied )
 fi
 
-# Correct permission for empty /usr/openv/var/credcache/0/ used by Credential Cache Manager
+# Correct permissions for the empty /usr/openv/var/... skeleton (skel/NBU ships everything
+# at git's default 755 - it doesn't track directory modes):
 chmod 0700 "$ROOTFS_DIR/usr/openv/var/credcache/0"
+chmod 0700 "$ROOTFS_DIR/usr/openv/var/vnetd"
+chmod 0700 "$ROOTFS_DIR/usr/openv/var/telemetry"
+chmod 0710 "$ROOTFS_DIR/usr/openv/var/retry_resiliency"
+chmod -R 0700 "$ROOTFS_DIR/usr/openv/var/vxss/at"
+chmod 0700 "$ROOTFS_DIR/usr/openv/var/vxss/credentials/keystore"
