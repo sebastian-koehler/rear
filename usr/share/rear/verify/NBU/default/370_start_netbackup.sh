@@ -32,7 +32,7 @@ fi
 
 LogPrint "NetBackup services started."
 
-local nbu_primary current_hostname token cert_output rc
+local nbu_primary current_hostname hostname_output token cert_output rc
 
 nbu_primary=$( grep -i '^[[:space:]]*SERVER' /usr/openv/netbackup/bp.conf | head -1 | sed -e 's/^[^=]*=[[:space:]]*//' -e 's/[[:space:]]*$//' ) || true
 test -n "$nbu_primary" || Error "Could not determine the NetBackup Primary server from bp.conf (SERVER=)"
@@ -42,7 +42,12 @@ LogPrint "Fetching the NetBackup CA certificate from $nbu_primary..."
 LogPrint "You will be asked to confirm the CA certificate's fingerprint of the NetBackup Primary server."
 /usr/openv/netbackup/bin/nbcertcmd -getCAcertificate -server "$nbu_primary" 0<&6 1>&7 2>&8 || Error "Unable to fetch the NetBackup CA certificate from $nbu_primary"
 
-current_hostname=$( hostname -f 2>/dev/null || hostname ) || Error "Failed to determine current hostname"
+hostname_output=$( /usr/openv/netbackup/bin/bpclntcmd -gethostname 2>&1 )
+rc=$?
+Log "bpclntcmd -gethostname raw output (rc=$rc):"
+Log "$hostname_output"
+current_hostname=$( echo "$hostname_output" | grep -v '^[[:space:]]*$' | tail -n 1 )
+test $rc -eq 0 -a -n "$current_hostname" || Error "Failed to determine current hostname (bpclntcmd -gethostname failed, rc=$rc)"
 
 LogPrint ""
 if is_true "$NBU_CLIENT_RENAMED" ; then

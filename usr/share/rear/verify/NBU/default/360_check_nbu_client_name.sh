@@ -15,9 +15,14 @@
 
 local nbu_bpconf=/usr/openv/netbackup/bp.conf
 
-local bp_conf_client_name current_hostname
+local bp_conf_client_name current_hostname hostname_output rc
 bp_conf_client_name=$( grep -i '^[[:space:]]*CLIENT_NAME' "$nbu_bpconf" | head -1 | sed -e 's/^[^=]*=[[:space:]]*//' -e 's/[[:space:]]*$//' ) || true
-current_hostname=$( hostname -f 2>/dev/null || hostname ) || Error "Failed to determine current hostname"
+hostname_output=$( /usr/openv/netbackup/bin/bpclntcmd -gethostname 2>&1 )
+rc=$?
+Log "bpclntcmd -gethostname raw output (rc=$rc):"
+Log "$hostname_output"
+current_hostname=$( echo "$hostname_output" | grep -v '^[[:space:]]*$' | tail -n 1 )
+test $rc -eq 0 -a -n "$current_hostname" || Error "Failed to determine current hostname (bpclntcmd -gethostname failed, rc=$rc)"
 
 # Remember the ORIGINAL client name before any patching below:
 NBU_CLIENT_SOURCE="$bp_conf_client_name"
