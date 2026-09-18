@@ -6,6 +6,8 @@ LogPrint "NetBackup: restoring / into $TARGET_FS_ROOT"
 
 echo "change / to $TARGET_FS_ROOT" > $TMP_DIR/nbu_change_file
 
+local edate bprestore_args rc
+
 # Do not use ARGS here because that is readonly in the rear main script.
 # $TMP_DIR/restore_fs_list was made by 300_create_nbu_restore_fs_list.sh
 if [ ${#NBU_ENDTIME[@]} -gt 0 ] ; then

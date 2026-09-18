@@ -33,7 +33,7 @@ Start with the default configuration file of ReaR:
 
     $ cd /usr/share/rear/conf
     $ grep -r NBU *
-    default.conf:# BACKUP=NBU stuff (Symantec/Veritas NetBackup)
+    default.conf:# BACKUP=NBU stuff (Cohesity NetBackup)
     default.conf:COPY_AS_IS_NBU=( /usr/openv/bin/vnetd /usr/openv/bin/vopied /usr/openv/lib /usr/openv/netbackup /usr/openv/var/auth/[mn]*.txt )
     default.conf:COPY_AS_IS_EXCLUDE_NBU=( "/usr/openv/netbackup/logs/*" "/usr/openv/netbackup/bin/bpjava*" "/usr/openv/netbackup/bin/xbp" )
     default.conf:PROGS_NBU=( )

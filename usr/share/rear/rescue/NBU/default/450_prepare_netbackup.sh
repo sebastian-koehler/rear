@@ -1,21 +1,28 @@
 # 450_prepare_netbackup.sh
-# prepare environment for NBU (only if NBU version >=7.x)
+# Make sure whichever NetBackup client network-daemon startup files exist
+# on the source system get included in the rescue image, so they can be
+# started in the rescue system, see verify/NBU/default/370_start_netbackup.sh:
+# the PBX (vxpbx_exchanged) + NetBackup client systemd units or SysV
+# /etc/init.d scripts, or the legacy pre-PBX xinetd config.
+#
+# Whether a given client ships a systemd unit, a SysV script, or the
+# xinetd config depends on OS + NBU version together, not NBU version
+# alone, so just copy whichever exists rather than gating on a version
+# threshold - which one to prefer at start time is decided later, in
+# verify/NBU/.
 
-[ -f /usr/openv/netbackup/bin/version ] && \
-	NBU_version=$(grep -i netbackup /usr/openv/netbackup/bin/version | awk '{print $2}' | cut -d'.' -f1) || \
-	NBU_version=0
+local f=""
+for f in /etc/systemd/system/vxpbx_exchanged.service /usr/lib/systemd/system/vxpbx_exchanged.service; do
+	test -r "$f" && COPY_AS_IS+=( "$f" )
+done
+test -r "/etc/init.d/vxpbx_exchanged" && COPY_AS_IS+=( /etc/init.d/vxpbx_exchanged )
 
-[[ $NBU_version -lt 7 ]] && return	# NBU is using xinetd when version <7.x
+for f in /etc/systemd/system/netbackup.service /usr/lib/systemd/system/netbackup.service; do
+	test -r "$f" && COPY_AS_IS+=( "$f" )
+done
+test -r "/etc/init.d/netbackup" && COPY_AS_IS+=( /etc/init.d/netbackup )
 
-if [ -e "/etc/init.d/vxpbx_exchanged" ]; then
-	cp $v /etc/init.d/vxpbx_exchanged $ROOTFS_DIR/etc/scripts/system-setup.d/vxpbx_exchanged.real
-	chmod $v +x $ROOTFS_DIR/etc/scripts/system-setup.d/vxpbx_exchanged.real
-	echo "( /etc/scripts/system-setup.d/vxpbx_exchanged.real start )" > $ROOTFS_DIR/etc/scripts/system-setup.d/89-vxpbx_exchanged.sh
-fi
-
-if [ -e "/etc/init.d/netbackup" ]; then
-	cp $v /etc/init.d/netbackup $ROOTFS_DIR/etc/scripts/system-setup.d/netbackup.real
-	chmod $v +x $ROOTFS_DIR/etc/scripts/system-setup.d/netbackup.real
-	echo "( /etc/scripts/system-setup.d/netbackup.real )" > $ROOTFS_DIR/etc/scripts/system-setup.d/90-netbackup.sh
-	chmod $v +x $ROOTFS_DIR/etc/scripts/system-setup.d/90-netbackup.sh
+if test -r /etc/xinetd.d/vnetd -o -r /etc/xinetd.d/bpcd -o -r /etc/xinetd.d/vopied ; then
+	PROGS+=( xinetd )
+	COPY_AS_IS+=( /etc/xinetd.conf /etc/xinetd.d/bpcd /etc/xinetd.d/vnetd /etc/xinetd.d/vopied )
 fi

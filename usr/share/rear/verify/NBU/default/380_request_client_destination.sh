@@ -11,7 +11,18 @@ while read KEY VALUE ; do
     export NBU_$KEY="$( echo "$VALUE" | sed -e 's/=//' -e 's/ //g' )"
 done </usr/openv/netbackup/bp.conf
 
-NBU_CLIENT_SOURCE="${NBU_CLIENT_NAME}"
+# 360_check_nbu_client_name.sh already detected an auto-rename (rescue
+# system hostname != bp.conf's original CLIENT_NAME) and resolved both the
+# source and destination client names for us - nothing more to ask.
+if is_true "$NBU_CLIENT_RENAMED" ; then
+    LogPrint ""
+    LogPrint "Client rename already detected and handled: restoring FROM $NBU_CLIENT_SOURCE TO $NBU_CLIENT_NAME."
+    return
+fi
+
+# NBU_CLIENT_SOURCE may already be set by 360_check_nbu_client_name.sh
+# (the ORIGINAL name, read before any bp.conf patching) - don't clobber it:
+test -z "$NBU_CLIENT_SOURCE" && NBU_CLIENT_SOURCE="${NBU_CLIENT_NAME}"
 
 LogPrint ""
 LogPrint "Netbackup Client Source For This Restore is:  $NBU_CLIENT_SOURCE"
