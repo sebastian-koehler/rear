@@ -14,7 +14,7 @@ bpcln_output=$( "$nbu_bpclntcmd" -is_master_server "${NBU_SERVER}" 2>&1 )
 rc=$?
 Log "bpclntcmd -is_master_server ${NBU_SERVER} raw output (rc=$rc):"
 Log "$bpcln_output"
-test $rc -eq 0 || Error "Sorry, but ${NBU_SERVER} is unreachable or not confirmed as a NetBackup Primary/Master server (bpclntcmd -is_master_server failed, rc=$rc)."
+test $rc -eq 0 || Error "${NBU_SERVER} is unreachable or not confirmed as a NetBackup Primary server (bpclntcmd -is_master_server failed, rc=$rc)."
 LogPrint "Connectivity and server role confirmed."
 
 # NetBackup version on the Primary - informational only, never fatal
