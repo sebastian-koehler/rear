@@ -25,9 +25,9 @@ fi
 test -z "$NBU_CLIENT_SOURCE" && NBU_CLIENT_SOURCE="${NBU_CLIENT_NAME}"
 
 LogPrint ""
-LogPrint "Netbackup Client Source For This Restore is:  $NBU_CLIENT_SOURCE"
+LogPrint "Netbackup client name for this restore: $NBU_CLIENT_SOURCE"
 LogPrint "If this is a normal restore to the same client press ENTER."
-LogPrint "If this is a restore to a CLONE enter the new client name."
+LogPrint "To restore another NetBackup client enter the client name and press ENTER."
 # Use the original STDIN STDOUT and STDERR when rear was launched by the user
 # to get input from the user and to show output to the user (cf. _framework-setup-and-functions.sh):
 read -t $WAIT_SECS -r -p "Enter Cloned Client name or press ENTER [$WAIT_SECS secs]: " 0<&6 1>&7 2>&8
