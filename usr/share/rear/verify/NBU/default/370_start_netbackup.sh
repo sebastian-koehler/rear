@@ -3,18 +3,19 @@
 # fallback for pre-PBX clients), then enroll/reissue this rescue system's
 # host certificate with the primary via nbcertcmd. Since NetBackup will not
 # include the original cert in the backup Rear will also not carry it onto
-# the ISO, so a fresh token-based enrollment is used instead.
+# the ISO, so a fresh token-based enrollment is required.
 #
 # Runs after 360_check_nbu_client_name.sh: bp.conf's CLIENT_NAME must be
 # confirmed/renamed before the client daemon starts and reads it.
 
 # check the unit file on disk, not list-unit-files' exit code (always 0 on systemd 219/RHEL7)
+# restart the systemd services since they start automatically with the rescue system
 if has_binary systemctl \
 	&& { test -e /etc/systemd/system/vxpbx_exchanged.service || test -e /usr/lib/systemd/system/vxpbx_exchanged.service ; } ; then
 	systemctl daemon-reload
-	systemctl start vxpbx_exchanged.service || Error "Unable to start vxpbx_exchanged via systemd"
+	systemctl restart vxpbx_exchanged.service || Error "Unable to restart vxpbx_exchanged via systemd"
 	if test -e /etc/systemd/system/netbackup.service -o -e /usr/lib/systemd/system/netbackup.service ; then
-		systemctl start netbackup.service || Error "Unable to start the NetBackup client via systemd"
+		systemctl restart netbackup.service || Error "Unable to restart the NetBackup client via systemd"
 	fi
 elif test -x /etc/init.d/vxpbx_exchanged ; then
 	/etc/init.d/vxpbx_exchanged start || Error "Unable to start vxpbx_exchanged via /etc/init.d/vxpbx_exchanged"
@@ -34,10 +35,10 @@ LogPrint "NetBackup services started."
 local nbu_primary current_hostname token cert_output rc
 
 nbu_primary=$( grep -i '^[[:space:]]*SERVER' /usr/openv/netbackup/bp.conf | head -1 | sed -e 's/^[^=]*=[[:space:]]*//' -e 's/[[:space:]]*$//' ) || true
-test -n "$nbu_primary" || Error "Could not determine the NetBackup primary server from bp.conf (SERVER=)"
+test -n "$nbu_primary" || Error "Could not determine the NetBackup Primary server from bp.conf (SERVER=)"
 
 LogPrint ""
-LogPrint "Fetching the NetBackup CA certificate from $nbu_primary ..."
+LogPrint "Fetching the NetBackup CA certificate from $nbu_primary..."
 LogPrint "You will be asked to confirm the CA certificate's fingerprint of the NetBackup Primary server."
 /usr/openv/netbackup/bin/nbcertcmd -getCAcertificate -server "$nbu_primary" 0<&6 1>&7 2>&8 || Error "Unable to fetch the NetBackup CA certificate from $nbu_primary"
 
@@ -62,7 +63,7 @@ while true ; do
 		Error "NetBackup certificate enrollment cancelled by user."
 	fi
 	if test -z "$token" ; then
-		LogPrintError "A token is required - cannot restore without a trusted host certificate. Enter a token, or 'exit' to cancel."
+		LogPrintError "A token is required. Cannot restore without a trusted host certificate. Enter a token, or 'exit' to cancel."
 		continue
 	fi
 	cert_output=$( /usr/openv/netbackup/bin/nbcertcmd -getCertificate -server "$nbu_primary" -token "$token" -force 2>&1 )
@@ -71,10 +72,10 @@ while true ; do
 	test $rc -eq 0 && break
 	if echo "$cert_output" | grep -qi "Reissue token is mandatory" ; then
 		LogPrintError ""
-		LogPrintError "A certificate already exists for this client on $nbu_primary. Provide a reissue"
-		LogPrintError "token for this client using the NetBackup WebUI, or 'exit' to cancel."
+		LogPrintError "A certificate already exists for this client on $nbu_primary. Generate and provide a reissue"
+		LogPrintError "token for $current_hostname in the NetBackup WebUI, or 'exit' to cancel."
 	else
-		LogPrintError "Certificate enrollment failed (see output above) - check the token and try again, or 'exit' to cancel."
+		LogPrintError "Certificate enrollment failed (see output above). Check the token and try again, or 'exit' to cancel."
 	fi
 done
 

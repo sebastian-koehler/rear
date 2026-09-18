@@ -1,6 +1,7 @@
+# 390_request_point_in_time_restore_parameters.sh
 
-# Ask for NBU NetBackup Point-In-Time Restore.
-# One point in time is used for all filespaces.
+# Ask for NetBackup Point-In-Time Restore.
+# One point in time is used for all filesystems.
 # This causes the bprecover to use the input date or date/time to be used as the endtime -e option
 # see the usr/share/rear/restore/NBU/default/400_restore_with_nbu.sh script.
 
@@ -42,5 +43,5 @@ NBU_ENDTIME=( "$nbu_endtime_date" )
 # When also an actual time was specified (i.e. when it is not "00:00:00") add it:
 test "$nbu_endtime_time" != "00:00:00" && NBU_ENDTIME+=( "$nbu_endtime_time" )
 
-UserOutput "Doing NetBackup Point-In-Time Restore of all filespaces at or before ${NBU_ENDTIME[@]}"
+UserOutput "Doing NetBackup Point-In-Time Restore of all filesystems at or before ${NBU_ENDTIME[@]}"
 

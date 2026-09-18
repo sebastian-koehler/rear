@@ -10,8 +10,8 @@
 #
 # Runs BEFORE 370_start_netbackup.sh deliberately: the NetBackup client
 # daemon reads CLIENT_NAME from bp.conf at startup, so the name must be
-# confirmed/corrected here first - starting it before this check could
-# start it under the wrong (original, pre-rename) identity.
+# confirmed/corrected here first. Starting it before this check could
+# start it under the wrong (original) hostname.
 
 local nbu_bpconf=/usr/openv/netbackup/bp.conf
 
