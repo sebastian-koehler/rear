@@ -22,7 +22,7 @@ rc=$?
 Log "bpclntcmd -sv raw output (rc=$rc):"
 Log "$bpcln_output"
 if test $rc -eq 0 ; then
-	primary_version=$( echo "$bpcln_output" | grep -v '^[[:space:]]*$' | tail -n 1 )
+	primary_version=$( echo "$bpcln_output" | grep -v '^[[:space:]]*$' | tail -n 1 | sed -e 's/[[:space:]]*$//' )
 else
 	primary_version="unknown"
 	LogPrintError "Could not determine the NetBackup version on Primary Server ${NBU_SERVER} (bpclntcmd -sv failed, rc=$rc, non-fatal)."
@@ -34,7 +34,7 @@ rc=$?
 Log "bpclntcmd -get_local_client_patch_version raw output (rc=$rc):"
 Log "$bpcln_output"
 if test $rc -eq 0 ; then
-	local_version=$( echo "$bpcln_output" | grep -v '^[[:space:]]*$' | tail -n 1 )
+	local_version=$( echo "$bpcln_output" | grep -v '^[[:space:]]*$' | tail -n 1 | sed -e 's/[[:space:]]*$//' )
 else
 	local_version="unknown"
 	LogPrintError "Could not determine the local NetBackup client version (bpclntcmd -get_local_client_patch_version failed, rc=$rc, non-fatal)."

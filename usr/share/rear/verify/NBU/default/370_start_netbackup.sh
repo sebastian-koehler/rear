@@ -46,7 +46,7 @@ hostname_output=$( /usr/openv/netbackup/bin/bpclntcmd -gethostname 2>&1 )
 rc=$?
 Log "bpclntcmd -gethostname raw output (rc=$rc):"
 Log "$hostname_output"
-current_hostname=$( echo "$hostname_output" | grep -v '^[[:space:]]*$' | tail -n 1 )
+current_hostname=$( echo "$hostname_output" | grep -v '^[[:space:]]*$' | tail -n 1 | sed -e 's/[[:space:]]*$//' )
 test $rc -eq 0 -a -n "$current_hostname" || Error "Failed to determine current hostname (bpclntcmd -gethostname failed, rc=$rc)"
 
 LogPrint ""
