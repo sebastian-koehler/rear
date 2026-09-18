@@ -63,7 +63,7 @@ LogPrint ""
 # no timeout: getting a token from the WebUI can take a while. loop until a valid
 # token or 'exit' (the escape hatch).
 while true ; do
-	token=$( UserInput -I NBU_CERT_TOKEN -r -t 0 -p "Enter NetBackup enrollment token:" ) || true
+	token=$( UserInput -I NBU_CERT_TOKEN -C -s -r -t 0 -p "Enter NetBackup enrollment token:" ) || true
 	if test "$( echo "$token" | tr '[:upper:]' '[:lower:]' )" = "exit" ; then
 		Error "NetBackup certificate enrollment cancelled by user."
 	fi
