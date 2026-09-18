@@ -58,6 +58,7 @@ fi
 LogPrint "A host certificate may or may not exist on Primary server $nbu_primary."
 LogPrint "Provide an authorization or reissue token for this client. The token can be created using the"
 LogPrint "NetBackup WebUI or nbcertcmd -createtoken command on the Primary server."
+LogPrint "The token will not be displayed as you type it."
 LogPrint ""
 
 # no timeout: getting a token from the WebUI can take a while. loop until a valid
