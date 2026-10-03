@@ -17,12 +17,12 @@ local nbu_catalog_lines=() nbu_catalog_dates=() nbu_catalog_times=() nbu_catalog
 
 # Show what NetBackup actually has in its catalog for the restore source
 # client, so the operator can pick a backup instead of typing a date/time
-# from memory. bpclimagelist has no policy-type filter matching bprestore's
+# from memory. 'bpclimagelist' has no policy-type filter matching 'bprestore's
 # hardcoded "-t 0" (Standard) restore type. Its own "-t" is the backup TYPE
 # (FULL/INCR/CINC/...), not the policy type, so this deliberately lists all
 # of the client's images rather than pass a filter that isn't equivalent.
 # -Listseconds is required for enough precision to tell same-day backups
-# apart, since that is exactly what bprestore -e needs to disambiguate them.
+# apart, since that is exactly what "bprestore -e" needs to disambiguate them.
 # -T lists only backups with True Image Restore info, so the
 # picker only offers backups that can be correctly Point-In-Time restored.
 #
@@ -35,9 +35,25 @@ local nbu_catalog_lines=() nbu_catalog_dates=() nbu_catalog_times=() nbu_catalog
 is_false "$NBU_TRUE_IMAGE_RESTORE" && nbu_tir_enabled="no"
 test "$nbu_tir_enabled" = "yes" && nbu_catalog_tir_flag="-T"
 LogPrint ""
-LogPrint "Querying the NetBackup catalog for $NBU_CLIENT_SOURCE's backups..."
-nbu_catalog_output=$( "$nbu_bpclimagelist" -Listseconds -client "$NBU_CLIENT_SOURCE" $nbu_catalog_tir_flag 2>&1 )
-nbu_catalog_rc=$?
+while true ; do
+    LogPrint "Querying the NetBackup catalog for $NBU_CLIENT_SOURCE's backups..."
+    nbu_catalog_output=$( "$nbu_bpclimagelist" -Listseconds -client "$NBU_CLIENT_SOURCE" $nbu_catalog_tir_flag 2>&1 )
+    nbu_catalog_rc=$?
+    test $nbu_catalog_rc -eq 135 || break
+    # EXIT STATUS 135: the source client is not yet authorized as an altname
+    # of the destination on the Primary server. Give the operator a chance
+    # to fix that and retry, instead of failing the whole restore outright.
+    LogPrint ""
+    LogPrintError "'bpclimagelist' failed: $NBU_CLIENT_SOURCE is not authorized as an altname"
+    LogPrintError "of $NBU_CLIENT_NAME on the Primary server $NBU_SERVER."
+    LogPrint ""
+    LogPrint "Retry after changing the altname configuration on the Primary server."
+    read -t $WAIT_SECS -r -p "Press ENTER to retry, or enter EXIT to abort [$WAIT_SECS secs]: " 0<&6 1>&7 2>&8
+    if [[ "${REPLY^^}" == "EXIT" ]] ; then
+        LogPrint ""
+        Error "User aborted NetBackup restore to configure the altname authorization on the Primary server, update bp.conf or pick a different client name above."
+    fi
+done
 
 if [ $nbu_catalog_rc -eq 0 ] ; then
     # Match only actual data rows (leading "mm/dd/yyyy HH:MM:SS"), which skips
@@ -74,9 +90,9 @@ if [ ${#nbu_catalog_lines[@]} -gt 0 ] ; then
     UserOutput "or enter a number above to restore that Point-In-Time backup."
 else
     if [ $nbu_catalog_rc -ne 0 ] ; then
-        Error "Could not query the NetBackup catalog for $NBU_CLIENT_SOURCE (bpclimagelist rc=$nbu_catalog_rc)."
+        Error "Could not query the NetBackup catalog for $NBU_CLIENT_SOURCE ('bpclimagelist' rc=$nbu_catalog_rc)."
     fi
-    LogPrintError "The NetBackup catalog query for $NBU_CLIENT_SOURCE returned no matching backups (bpclimagelist rc=0)."
+    LogPrintError "The NetBackup catalog query for $NBU_CLIENT_SOURCE returned no matching backups ('bpclimagelist' rc=0)."
     UserOutput ""
     UserOutput "NetBackup restores by default the latest backup data."
     UserOutput "Press only ENTER to restore the most recent available backup."

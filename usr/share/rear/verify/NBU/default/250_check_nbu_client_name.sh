@@ -19,7 +19,7 @@ test -r "$nbu_bpconf" || Error "Cannot read $nbu_bpconf."
 
 local bp_conf_client_name current_hostname rc
 bp_conf_client_name=$( grep -i '^[[:space:]]*CLIENT_NAME[[:space:]]*=' "$nbu_bpconf" | head -1 | sed -e 's/^[^=]*=[[:space:]]*//' -e 's/[[:space:]]*$//' )
-# Not bpclntcmd -gethostname: it just echoes back bp.conf's own CLIENT_NAME
+# Not "bpclntcmd -gethostname": it just echoes back bp.conf's own CLIENT_NAME
 # rather than doing a live hostname lookup, so it would always equal
 # $bp_conf_client_name below and the rename detection could never fire.
 current_hostname=$( hostname -f 2>&1 )
@@ -62,8 +62,9 @@ if test -n "$bp_conf_client_name" && echo "${nbu_server_media_list,,}" | grep -q
 MEDIA_SERVER entry in bp.conf matches CLIENT_NAME ($bp_conf_client_name).
 
 Restoring may not work since NetBackup services must be up and running to
-run bprestore. Update SERVER and MEDIA_SERVER and try again. You may need
-to use a different Primary server holding an AIR/IRE-replicated backup."
+run 'bprestore'. Update SERVER and MEDIA_SERVER and try again. You must point
+to another Primary server holding a replicated (or duplicated) copy of this
+client's image."
 fi
 
 LogPrint ""
@@ -81,8 +82,8 @@ else
 fi
 
 LogPrint "TIR will provide the best DR experience and is enabled by default."
-LogPrint "To change this, edit NBU_TRUE_IMAGE_RESTORE in /etc/rear/local.conf or"
-LogPrint "/etc/rear/site.conf before running 'rear recover'."
+LogPrint "To change this, edit NBU_TRUE_IMAGE_RESTORE in local.conf/site.conf"
+LogPrint "before running 'rear recover'."
 LogPrint ""
 LogPrint "NetBackup services have not been started yet and no certificate has"
 LogPrint "been enrolled. If this restore should use a different Primary or"
@@ -90,8 +91,6 @@ LogPrint "Media server (e.g. a DR-site NetBackup server), EXIT below and edit"
 LogPrint "bp.conf now."
 LogPrint ""
 
-# Use the original STDIN STDOUT and STDERR when rear was launched by the user
-# to get input from the user and to show output to the user (cf. _framework-setup-and-functions.sh):
 read -t $WAIT_SECS -r -p "Press ENTER to continue with the current bp.conf, or enter EXIT to abort [$WAIT_SECS secs]: " 0<&6 1>&7 2>&8
 if [[ "${REPLY^^}" == "EXIT" ]] ; then
         LogPrint ""

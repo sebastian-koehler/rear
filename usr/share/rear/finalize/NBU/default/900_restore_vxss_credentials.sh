@@ -7,7 +7,7 @@
 # them. Neither is ever present on the restored disk. Without
 # webtruststore/cacert.pem specifically, the recovered client can't even
 # initialize an outbound SSL context to the primary ("bpclntcmd -check_vxss"
-# fails with "the vnetd proxy encountered an error", vnetd/bpclntcmd logs
+# fails with "the vnetd proxy encountered an error", 'vnetd'/'bpclntcmd' logs
 # show "load_trust_store" / "Path to trust store is not accessible", errno 2)
 # regardless of the host cert being fine.
 # verify/NBU/default/350_start_netbackup.sh already fetched the primary's CA
@@ -30,7 +30,7 @@
 # listener, but 'cp -a' recreates it as a socket node fine, and vnetd
 # unlinks/rebinds it on the next start anyway.
 #
-# Runs for the bprestore-driven restore. It already went through client
+# Runs for the 'bprestore'-driven restore. It already went through client
 # identity/cert enrollment in the verify stage and needs a working
 # certificate afterwards.
 #

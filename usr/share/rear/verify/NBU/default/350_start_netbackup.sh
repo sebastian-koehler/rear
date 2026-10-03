@@ -2,7 +2,7 @@
 
 # Start PBX/NetBackup client daemons (systemd, then SysV, then xinetd
 # fallback for pre-PBX clients), then enroll/reissue this rescue system's
-# host certificate with the primary via nbcertcmd. Since NetBackup will not
+# host certificate with the primary via 'nbcertcmd'. Since NetBackup will not
 # include the original cert in the backup Rear will also not carry it onto
 # the ISO, so a fresh token-based enrollment is required.
 #
@@ -58,7 +58,7 @@ LogPrint ""
 LogPrint "A host certificate may or may not exist on Primary server $NBU_SERVER."
 LogPrint "Provide an authorization or reissue token for the client $current_hostname."
 LogPrint ""
-LogPrint "The token can be created using the NetBackup WebUI or nbcertcmd -createtoken command on the Primary server."
+LogPrint "The token can be created using the NetBackup WebUI or 'nbcertcmd -createtoken' command on the Primary server."
 
 # no timeout: getting a token from the WebUI can take a while. loop until a valid
 # token or 'exit' (the escape hatch).
